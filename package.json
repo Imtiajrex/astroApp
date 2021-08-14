@@ -8,6 +8,8 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@contentful/rich-text-html-renderer": "^15.1.0",
+    "@contentful/rich-text-react-renderer": "^15.1.0",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/bottom-tabs": "^5.11.11",
     "@react-navigation/native": "^5.9.4",
@@ -27,6 +29,7 @@
     "react-native-dotenv": "^3.1.1",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-reanimated": "~2.2.0",
+    "react-native-render-html": "^6.0.5",
     "react-native-safe-area-context": "3.2.0",
     "react-native-screens": "^3.4.0",
     "react-native-shared-element": "^0.7.0",
@@ -34,6 +37,7 @@
     "react-native-svg": "^12.1.1",
     "react-native-web": "~0.13.12",
     "react-native-webview": "11.6.2",
+    "react-native-webview-autoheight": "^1.0.6",
     "react-navigation-shared-element": "^5.0.0-alpha1"
   },
   "devDependencies": {
