@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
 	View,
 	Text,
@@ -14,24 +14,27 @@ import layout from "../utils/layout";
 import colors from "../utils/colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { SharedElement } from "react-navigation-shared-element";
+import client from "../utils/client";
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedText = Animated.createAnimatedComponent(Text);
 const AnimatedView = Animated.createAnimatedComponent(View);
 export default function Articles({ navigation }) {
 	const scrollY = useRef(new Animated.Value(0)).current;
-	// const [articles, setArticles] = useState([]);
-	// const getArticles = async () => {
-	// 	try {
-	// 		const trv = await client.getEntries("Articles").limit(10);
-	// 		setArticles(trv.items);
-	// 		console.log(trv.items);
-	// 	} catch (err) {
-	// 		console.log(err);
-	// 	}
-	// };
-	// useEffect(() => {
-	// 	getArticles();
-	// }, []);
+	const [articles, setArticles] = useState([]);
+	const getArticles = async () => {
+		try {
+			const trv = await client.getEntries({
+				content_type: "articles",
+				limit: 10,
+			});
+			setArticles(trv.items);
+		} catch (err) {
+			console.log("Error:", err);
+		}
+	};
+	useEffect(() => {
+		getArticles();
+	}, []);
 	return (
 		<View style={{ flex: 1 }}>
 			<TouchableOpacity
@@ -45,7 +48,7 @@ export default function Articles({ navigation }) {
 					[{ nativeEvent: { contentOffset: { y: scrollY } } }],
 					{ useNativeDriver: true }
 				)}
-				data={data.post}
+				data={articles}
 				scrollEventThrottle={16}
 				keyExtractor={(_, index) => index.toString()}
 				showsVerticalScrollIndicator={false}
@@ -81,16 +84,13 @@ export default function Articles({ navigation }) {
 					);
 				}}
 			/>
-			<Backdrop scrollY={scrollY} data={data} />
+			<Backdrop scrollY={scrollY} data={articles} />
 		</View>
 	);
 }
 function Article({ item, opacity, translateY, extranslateY, navigation }) {
-	const {
-		title = "",
-		excerpt = "",
-		image = require("../assets/bg_article.jpg"),
-	} = item;
+	const { title = "", shortDescription = "", featuredImage } = item.fields;
+
 	return (
 		<View style={styles.article_wrapper}>
 			<TouchableWithoutFeedback
@@ -99,7 +99,7 @@ function Article({ item, opacity, translateY, extranslateY, navigation }) {
 				<View style={styles.article}>
 					<SharedElement id={`item.${item.id}.image`}>
 						<AnimatedImage
-							source={image}
+							source={{ uri: `https:${featuredImage.fields.file.url}` }}
 							style={{
 								...styles.image,
 								opacity,
@@ -122,7 +122,7 @@ function Article({ item, opacity, translateY, extranslateY, navigation }) {
 							transform: [{ translateY: extranslateY }],
 						}}
 					>
-						{excerpt}
+						{shortDescription}
 					</AnimatedText>
 				</View>
 			</TouchableWithoutFeedback>
@@ -131,53 +131,57 @@ function Article({ item, opacity, translateY, extranslateY, navigation }) {
 }
 function Backdrop({ data, scrollY }) {
 	return (
-		<View
-			style={{
-				position: "absolute",
-				width: layout.width,
-				height: layout.height,
-				zIndex: -10,
-				backgroundColor: colors.background,
-			}}
-		>
-			<FlatList
-				data={data.post}
-				keyExtractor={(_, index) => index.toString()}
-				contentContainerStyle={{
-					flexGrow: 1,
-					borderWidth: 1,
-				}}
-				renderItem={({ item, index }) => {
-					const inputRange = [
-						(index - 1) * layout.height,
-						index * layout.height,
-					];
-					const opacity = scrollY.interpolate({
-						inputRange,
-						outputRange: [0, 1],
-					});
-					return (
-						<AnimatedImage
-							source={item.image}
-							style={{
-								position: "absolute",
-								...styles.bg_image,
-								opacity,
-							}}
-						/>
-					);
-				}}
-			/>
-			<LinearGradient
-				colors={["#131313", "transparent", colors.background]}
-				locations={[0, 0.35, 1]}
+		data.length > 0 && (
+			<View
 				style={{
 					position: "absolute",
 					width: layout.width,
 					height: layout.height,
+					zIndex: -10,
+					backgroundColor: colors.background,
 				}}
-			/>
-		</View>
+			>
+				<FlatList
+					data={data}
+					keyExtractor={(_, index) => index.toString()}
+					contentContainerStyle={{
+						flexGrow: 1,
+						borderWidth: 1,
+					}}
+					renderItem={({ item, index }) => {
+						const inputRange = [
+							(index - 1) * layout.height,
+							index * layout.height,
+						];
+						const opacity = scrollY.interpolate({
+							inputRange,
+							outputRange: [0, 1],
+						});
+						return (
+							<AnimatedImage
+								source={{
+									uri: `https:${item.fields.featuredImage.fields.file.url}`,
+								}}
+								style={{
+									position: "absolute",
+									...styles.bg_image,
+									opacity,
+								}}
+							/>
+						);
+					}}
+				/>
+				<LinearGradient
+					colors={["#131313", "transparent", colors.background]}
+					locations={[0, 0.35, 1]}
+					style={{
+						position: "absolute",
+						width: layout.width,
+						height: layout.height,
+					}}
+				/>
+			</View>
+		)
 	);
 }
 const styles = StyleSheet.create({

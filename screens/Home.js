@@ -49,9 +49,10 @@ export default function Home({ navigation }) {
 					renderItem={({ item }) => (
 						<View style={styles.trivia}>
 							<Image
-								source={{ uri: item.fields.image.fields.file.url }}
+								source={{ uri: `https:${item.fields.image.fields.file.url}` }}
 								style={styles.trivia_image}
 							/>
+							{console.log(`https:${item.fields.image.fields.file.url}`)}
 							<View style={styles.overlay} />
 							<Text style={styles.trivia_text}>{item.fields.trivia}</Text>
 						</View>
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
 	},
 	trivia: {
 		width: layout.width * 0.85,
-		// height: layout.width * 1.2,
+		height: layout.width * 0.85,
 		justifyContent: "center",
 		alignItems: "center",
 		flexGrow: 1,
